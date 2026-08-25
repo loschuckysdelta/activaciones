@@ -24,13 +24,13 @@ export default async function handler(req, res) {
     const users = db.collection("users");
     const now = new Date();
 
+    // No incluimos credits en $setOnInsert porque también se modifica con $inc.
     await users.updateOne(
       { telegramId },
       {
         $setOnInsert: {
           telegramId,
           username: "",
-          credits: 0,
           days: 0,
           createdAt: now
         },
@@ -48,12 +48,12 @@ export default async function handler(req, res) {
       user: {
         telegramId: user.telegramId,
         username: user.username || "",
-        credits: user.credits || 0,
-        days: user.days || 0
+        credits: Number(user.credits) || 0,
+        days: Number(user.days) || 0
       }
     });
   } catch (error) {
-    console.error(error);
+    console.error("[add_credits]", error);
     return res.status(500).json({ success: false, message: "Error interno del servidor" });
   }
 }

@@ -14,17 +14,11 @@ export default async function handler(req, res) {
     const amount = Number(req.body?.amount);
 
     if (!telegramId) {
-      return res.status(400).json({
-        success: false,
-        message: "telegramId es obligatorio"
-      });
+      return res.status(400).json({ success: false, message: "telegramId es obligatorio" });
     }
 
     if (!["credits", "days"].includes(type)) {
-      return res.status(400).json({
-        success: false,
-        message: "type debe ser credits o days"
-      });
+      return res.status(400).json({ success: false, message: "type debe ser credits o days" });
     }
 
     if (!Number.isFinite(amount) || !Number.isInteger(amount) || amount <= 0) {
@@ -38,22 +32,27 @@ export default async function handler(req, res) {
     const users = db.collection("users");
     const now = new Date();
 
-    const updateField = {};
-    updateField[type] = amount;
+    // IMPORTANTE: MongoDB no permite modificar el mismo campo con
+    // $setOnInsert y $inc en una sola operación. Por eso solo
+    // inicializamos en $setOnInsert el campo contrario al que sumamos.
+    const setOnInsert = {
+      telegramId,
+      username: "",
+      createdAt: now
+    };
+
+    if (type === "credits") {
+      setOnInsert.days = 0;
+    } else {
+      setOnInsert.credits = 0;
+    }
 
     await users.updateOne(
       { telegramId },
       {
-        $setOnInsert: {
-          telegramId,
-          credits: 0,
-          days: 0,
-          createdAt: now
-        },
-        $inc: updateField,
-        $set: {
-          updatedAt: now
-        }
+        $setOnInsert: setOnInsert,
+        $inc: { [type]: amount },
+        $set: { updatedAt: now }
       },
       { upsert: true }
     );
@@ -68,12 +67,12 @@ export default async function handler(req, res) {
       user: {
         telegramId: user.telegramId,
         username: user.username || "",
-        credits: user.credits || 0,
-        days: user.days || 0
+        credits: Number(user.credits) || 0,
+        days: Number(user.days) || 0
       }
     });
   } catch (error) {
-    console.error(error);
+    console.error("[increment]", error);
     return res.status(500).json({
       success: false,
       message: "Error interno del servidor"
