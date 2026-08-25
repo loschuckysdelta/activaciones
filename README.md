@@ -105,3 +105,7 @@ El panel permite:
 ## Panel sin pantalla ADMIN_KEY
 
 Esta versión elimina el cuadro de acceso ADMIN_KEY solicitado.
+
+## Panel mejorado
+
+Incluye menú lateral para Dashboard, Usuarios, APIs y Herramientas, estadísticas, acciones rápidas y vista responsive.
