@@ -1,0 +1,12 @@
+{
+  "name": "telegram-mongo-vercel-panel",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "mongodb": "^6.8.0"
+  }
+}

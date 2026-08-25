@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Panel Telegram</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#0b0f14;color:#fff}
+.wrap{max-width:1100px;margin:auto;padding:24px}
+h1{margin:0 0 8px}
+.sub{color:#9ca3af;margin-bottom:24px}
+.card{background:#131a22;border:1px solid #263241;border-radius:16px;padding:20px;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+input,select,button{width:100%;padding:12px;border-radius:10px;border:1px solid #344252;background:#0e141b;color:#fff}
+button{cursor:pointer;font-weight:700;background:#1f6feb}
+button.secondary{background:#273444}
+button.success{background:#16803c}
+button.warn{background:#8a5a00}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+.stat{background:#0e141b;border-radius:12px;padding:16px;text-align:center}
+.stat b{font-size:28px;display:block}
+table{width:100%;border-collapse:collapse}
+th,td{padding:12px;border-bottom:1px solid #263241;text-align:left}
+.msg{margin-top:12px;padding:12px;border-radius:10px;display:none}
+.ok{display:block;background:#12351f}
+.err{display:block;background:#4a1717}
+@media(max-width:700px){.row,.stats{grid-template-columns:1fr}table{font-size:13px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🤖 Panel del Bot</h1>
+  <div class="sub">MongoDB + Vercel · Créditos y días separados</div>
+
+  <div class="card">
+    <h2>👤 Usuario</h2>
+    <div class="grid">
+      <input id="telegramId" placeholder="ID de Telegram">
+      <input id="username" placeholder="Username (opcional)">
+      <button class="secondary" onclick="buscarUsuario()">Buscar</button>
+      <button onclick="registrarUsuario()">Registrar / actualizar</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><span>ID</span><b id="sId">-</b></div>
+      <div class="stat"><span>Créditos</span><b id="sCredits">0</b></div>
+      <div class="stat"><span>Días</span><b id="sDays">0</b></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>➕ Sumar saldo</h2>
+    <div class="grid">
+      <select id="incType">
+        <option value="credits">Créditos</option>
+        <option value="days">Días</option>
+      </select>
+      <input id="incAmount" type="number" min="1" placeholder="Cantidad">
+      <button class="success" onclick="incrementar()">Sumar</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>✏️ Establecer saldo exacto</h2>
+    <div class="grid">
+      <select id="setType">
+        <option value="credits">Créditos</option>
+        <option value="days">Días</option>
+      </select>
+      <input id="setAmount" type="number" min="0" placeholder="Cantidad exacta">
+      <button class="warn" onclick="establecer()">Guardar valor</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <h2>📋 Usuarios</h2>
+      <button class="secondary" onclick="cargarUsuarios()">Actualizar lista</button>
+    </div>
+    <div style="overflow:auto">
+      <table>
+        <thead><tr><th>ID</th><th>Username</th><th>Créditos</th><th>Días</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="msg" class="msg"></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+async function api(url, options={}) {
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {})
+  };
+
+  const r = await fetch(url, {...options, headers});
+  const data = await r.json().catch(() => ({}));
+
+  if (!r.ok) throw new Error(data.message || "Error en la API");
+  return data;
+}
+
+function mensaje(txt, ok) {
+  const m = $("msg");
+  m.textContent = txt;
+  m.className = "msg " + (ok ? "ok" : "err");
+}
+
+function pintar(u) {
+  $("sId").textContent = u.telegramId || "-";
+  $("sCredits").textContent = u.credits ?? 0;
+  $("sDays").textContent = u.days ?? 0;
+  $("telegramId").value = u.telegramId || "";
+  $("username").value = u.username || "";
+}
+
+async function buscarUsuario() {
+  try {
+    const id = $("telegramId").value.trim();
+    if (!id) throw new Error("Escribe un ID de Telegram");
+    const d = await api("/api/user?id=" + encodeURIComponent(id));
+    pintar(d.user);
+    mensaje("Usuario encontrado", true);
+  } catch(e) { mensaje(e.message, false); }
+}
+
+async function registrarUsuario() {
+  try {
+    const telegramId = $("telegramId").value.trim();
+    const username = $("username").value.trim();
+    if (!telegramId) throw new Error("Escribe un ID de Telegram");
+
+    const d = await api("/api/register", {
+      method: "POST",
+      body: JSON.stringify({telegramId, username})
+    });
+
+    pintar(d.user);
+    mensaje(d.message, true);
+    cargarUsuarios();
+  } catch(e) { mensaje(e.message, false); }
+}
+
+async function incrementar() {
+  try {
+    const telegramId = $("telegramId").value.trim();
+    const type = $("incType").value;
+    const amount = Number($("incAmount").value);
+
+    if (!telegramId) throw new Error("Primero escribe o busca un ID");
+    if (!Number.isInteger(amount) || amount <= 0) throw new Error("Cantidad inválida");
+
+    const d = await api("/api/increment", {
+      method: "POST",
+      body: JSON.stringify({telegramId, type, amount})
+    });
+
+    pintar(d.user);
+    $("incAmount").value = "";
+    mensaje(d.message, true);
+    cargarUsuarios();
+  } catch(e) { mensaje(e.message, false); }
+}
+
+async function establecer() {
+  try {
+    const telegramId = $("telegramId").value.trim();
+    const type = $("setType").value;
+    const amount = Number($("setAmount").value);
+
+    if (!telegramId) throw new Error("Primero escribe o busca un ID");
+    if (!Number.isInteger(amount) || amount < 0) throw new Error("Cantidad inválida");
+
+    const d = await api("/api/set", {
+      method: "POST",
+      body: JSON.stringify({telegramId, type, amount})
+    });
+
+    pintar(d.user);
+    $("setAmount").value = "";
+    mensaje(d.message, true);
+    cargarUsuarios();
+  } catch(e) { mensaje(e.message, false); }
+}
+
+async function cargarUsuarios() {
+  try {
+    const d = await api("/api/users");
+    $("tbody").innerHTML = d.users.map(u => `
+      <tr onclick='seleccionar(${JSON.stringify(JSON.stringify(u))})' style="cursor:pointer">
+        <td>${escapeHtml(u.telegramId)}</td>
+        <td>${escapeHtml(u.username || "-")}</td>
+        <td>${u.credits ?? 0}</td>
+        <td>${u.days ?? 0}</td>
+      </tr>
+    `).join("");
+  } catch(e) { mensaje(e.message, false); }
+}
+
+function seleccionar(serialized) {
+  const u = JSON.parse(serialized);
+  pintar(u);
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[c]));
+}
+
+window.addEventListener("load", () => {
+  cargarUsuarios();
+});
+</script>
+</body>
+</html>
