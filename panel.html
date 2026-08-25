@@ -200,6 +200,7 @@ textarea{width:100%;min-height:170px;resize:vertical;padding:12px 13px;border-ra
           <div class="api-item"><span class="method post">POST</span><code>/api/register</code><div class="sub">Registra o actualiza usuario</div></div>
           <div class="api-item"><span class="method post">POST</span><code>/api/add_user</code><div class="sub">Agrega registro con créditos y días</div></div>
           <div class="api-item"><span class="method post">POST</span><code>/api/add_credits</code><div class="sub">Agrega créditos</div></div>
+          <div class="api-item"><span class="method post">POST</span><code>/api/deduct_credits</code><div class="sub">Descuenta créditos si hay saldo suficiente</div></div>
           <div class="api-item"><span class="method post">POST</span><code>/api/add_days</code><div class="sub">Agrega días</div></div>
           <div class="api-item"><span class="method post">POST</span><code>/api/increment</code><div class="sub">Suma créditos o días</div></div>
           <div class="api-item"><span class="method post">POST</span><code>/api/set</code><div class="sub">Establece saldo exacto</div></div>
@@ -216,6 +217,7 @@ textarea{width:100%;min-height:170px;resize:vertical;padding:12px 13px;border-ra
             <button class="endpoint-btn" data-key="register">POST · /api/register</button>
             <button class="endpoint-btn" data-key="add_user">POST · /api/add_user</button>
             <button class="endpoint-btn" data-key="add_credits">POST · /api/add_credits</button>
+            <button class="endpoint-btn" data-key="deduct_credits">POST · /api/deduct_credits</button>
             <button class="endpoint-btn" data-key="add_days">POST · /api/add_days</button>
             <button class="endpoint-btn" data-key="increment">POST · /api/increment</button>
             <button class="endpoint-btn" data-key="set">POST · /api/set</button>
@@ -388,6 +390,7 @@ const testerEndpoints = {
   register: { method:"POST", path:"/api/register", body:{ telegramId:"123456789", username:"usuario" } },
   add_user: { method:"POST", path:"/api/add_user", body:{ telegramId:"123456789", username:"usuario", credits:50, days:30 } },
   add_credits: { method:"POST", path:"/api/add_credits", body:{ telegramId:"123456789", amount:50 } },
+  deduct_credits: { method:"POST", path:"/api/deduct_credits", body:{ telegramId:"123456789", amount:25 } },
   add_days: { method:"POST", path:"/api/add_days", body:{ telegramId:"123456789", amount:30 } },
   increment: { method:"POST", path:"/api/increment", body:{ telegramId:"123456789", type:"credits", amount:10 } },
   set: { method:"POST", path:"/api/set", body:{ telegramId:"123456789", type:"days", amount:200 } }

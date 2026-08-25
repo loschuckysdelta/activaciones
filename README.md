@@ -137,6 +137,36 @@ Incluye menú lateral para Dashboard, Usuarios, APIs y Herramientas, estadístic
 }
 ```
 
+
+### Descontar créditos
+
+`POST /api/deduct_credits`
+
+```json
+{
+  "telegramId": "123456789",
+  "amount": 25
+}
+```
+
+La API solo realiza el descuento cuando el usuario tiene créditos suficientes. Si el saldo es menor que `amount`, responde con `409` y no modifica los créditos.
+
+Ejemplo exitoso:
+
+```json
+{
+  "success": true,
+  "message": "Se descontaron 25 créditos",
+  "deducted": 25,
+  "user": {
+    "telegramId": "123456789",
+    "username": "usuario",
+    "credits": 75,
+    "days": 30
+  }
+}
+```
+
 ### Agregar días
 
 `POST /api/add_days`
