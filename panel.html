@@ -77,6 +77,17 @@ tbody tr:hover{background:#0f2032}
   .nav{grid-template-columns:repeat(2,1fr)}.status{margin-top:0}.main{padding:16px}
   .stats,.form-grid,.form-grid.three,.user-info{grid-template-columns:1fr}.shortcut-row{grid-template-columns:repeat(2,1fr)}
 }
+
+.api-tester{display:grid;grid-template-columns:280px minmax(0,1fr);gap:14px;margin-top:14px}
+.endpoint-list{display:grid;gap:8px}
+.endpoint-btn{border:1px solid var(--line);background:#09131d;color:#d9e5f2;border-radius:10px;padding:11px;text-align:left}
+.endpoint-btn.active{border-color:#527fff;background:#14243a}
+.tester-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+textarea{width:100%;min-height:170px;resize:vertical;padding:12px 13px;border-radius:10px;border:1px solid #31465d;background:#09131d;color:#fff;outline:none;font:13px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}
+.response-box{white-space:pre-wrap;word-break:break-word;background:#07111b;border:1px solid var(--line);border-radius:10px;padding:12px;min-height:170px;color:#cce0f5;font:13px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}
+.endpoint-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+@media(max-width:900px){.api-tester,.tester-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -187,8 +198,48 @@ tbody tr:hover{background:#0f2032}
           <div class="api-item"><span class="method get">GET</span><code>/api/users</code><div class="sub">Lista usuarios</div></div>
           <div class="api-item"><span class="method get">GET</span><code>/api/user?id=...</code><div class="sub">Consulta un usuario</div></div>
           <div class="api-item"><span class="method post">POST</span><code>/api/register</code><div class="sub">Registra o actualiza usuario</div></div>
+          <div class="api-item"><span class="method post">POST</span><code>/api/add_user</code><div class="sub">Agrega registro con créditos y días</div></div>
+          <div class="api-item"><span class="method post">POST</span><code>/api/add_credits</code><div class="sub">Agrega créditos</div></div>
+          <div class="api-item"><span class="method post">POST</span><code>/api/add_days</code><div class="sub">Agrega días</div></div>
           <div class="api-item"><span class="method post">POST</span><code>/api/increment</code><div class="sub">Suma créditos o días</div></div>
           <div class="api-item"><span class="method post">POST</span><code>/api/set</code><div class="sub">Establece saldo exacto</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🧪 Probar APIs</h2>
+        <div class="sub">Selecciona un endpoint, edita los datos y pulsa “Enviar prueba”.</div>
+        <div class="api-tester">
+          <div class="endpoint-list" id="endpointList">
+            <button class="endpoint-btn active" data-key="users">GET · /api/users</button>
+            <button class="endpoint-btn" data-key="user">GET · /api/user?id=...</button>
+            <button class="endpoint-btn" data-key="register">POST · /api/register</button>
+            <button class="endpoint-btn" data-key="add_user">POST · /api/add_user</button>
+            <button class="endpoint-btn" data-key="add_credits">POST · /api/add_credits</button>
+            <button class="endpoint-btn" data-key="add_days">POST · /api/add_days</button>
+            <button class="endpoint-btn" data-key="increment">POST · /api/increment</button>
+            <button class="endpoint-btn" data-key="set">POST · /api/set</button>
+          </div>
+
+          <div>
+            <div class="endpoint-meta">
+              <span id="testerMethod" class="badge green">GET</span>
+              <code id="testerPath">/api/users</code>
+            </div>
+
+            <div class="tester-grid">
+              <div>
+                <div class="sub" style="margin-bottom:7px">Request</div>
+                <textarea id="testerBody">{}</textarea>
+              </div>
+              <div>
+                <div class="sub" style="margin-bottom:7px">Response</div>
+                <div id="testerResponse" class="response-box">Pulsa “Enviar prueba” para ver la respuesta.</div>
+              </div>
+            </div>
+
+            <button class="btn violet" id="btnTestApi" style="width:100%;margin-top:10px">Enviar prueba</button>
+          </div>
         </div>
       </div>
     </section>
@@ -330,6 +381,61 @@ $("btnFilterUsers").addEventListener("click",()=>{
   const filtered=!q?allUsers:allUsers.filter(u=>String(u.telegramId).toLowerCase().includes(q)||String(u.username||"").toLowerCase().includes(q));
   renderUsers(filtered);
 });
+
+const testerEndpoints = {
+  users: { method:"GET", path:"/api/users", body:{} },
+  user: { method:"GET", path:"/api/user", body:{ id:"123456789" } },
+  register: { method:"POST", path:"/api/register", body:{ telegramId:"123456789", username:"usuario" } },
+  add_user: { method:"POST", path:"/api/add_user", body:{ telegramId:"123456789", username:"usuario", credits:50, days:30 } },
+  add_credits: { method:"POST", path:"/api/add_credits", body:{ telegramId:"123456789", amount:50 } },
+  add_days: { method:"POST", path:"/api/add_days", body:{ telegramId:"123456789", amount:30 } },
+  increment: { method:"POST", path:"/api/increment", body:{ telegramId:"123456789", type:"credits", amount:10 } },
+  set: { method:"POST", path:"/api/set", body:{ telegramId:"123456789", type:"days", amount:200 } }
+};
+let testerCurrent = "users";
+
+function selectTesterEndpoint(key){
+  testerCurrent = key;
+  const cfg = testerEndpoints[key];
+  document.querySelectorAll(".endpoint-btn").forEach(b=>b.classList.toggle("active",b.dataset.key===key));
+  $("testerMethod").textContent = cfg.method;
+  $("testerMethod").className = "badge " + (cfg.method==="GET" ? "green" : "orange");
+  $("testerPath").textContent = cfg.path + (key==="user" ? "?id=..." : "");
+  $("testerBody").value = JSON.stringify(cfg.body, null, 2);
+  $("testerResponse").textContent = "Pulsa “Enviar prueba” para ver la respuesta.";
+}
+document.querySelectorAll(".endpoint-btn").forEach(b=>b.addEventListener("click",()=>selectTesterEndpoint(b.dataset.key)));
+$("btnTestApi").addEventListener("click", async ()=>{
+  try{
+    const cfg = testerEndpoints[testerCurrent];
+    let parsed = {};
+    try { parsed = JSON.parse($("testerBody").value || "{}"); }
+    catch { throw new Error("El JSON del request no es válido"); }
+
+    let url = cfg.path;
+    const options = { method: cfg.method };
+
+    if(cfg.method === "GET"){
+      if(testerCurrent === "user"){
+        const id = String(parsed.id || parsed.telegramId || "").trim();
+        if(!id) throw new Error("Escribe id o telegramId en el JSON");
+        url += "?id=" + encodeURIComponent(id);
+      }
+    } else {
+      options.body = JSON.stringify(parsed);
+    }
+
+    $("testerResponse").textContent = "Enviando...";
+    const result = await api(url, options);
+    $("testerResponse").textContent = JSON.stringify(result, null, 2);
+    actionDone();
+  }catch(e){
+    $("testerResponse").textContent = JSON.stringify({success:false,message:e.message}, null, 2);
+  }
+});
+selectTesterEndpoint("users");
+
+
 window.addEventListener("load",async()=>{
   const h=location.hash.replace("#","");
   if(["dashboard","usuarios","apis","herramientas"].includes(h)) showView(h);

@@ -109,3 +109,45 @@ Esta versión elimina el cuadro de acceso ADMIN_KEY solicitado.
 ## Panel mejorado
 
 Incluye menú lateral para Dashboard, Usuarios, APIs y Herramientas, estadísticas, acciones rápidas y vista responsive.
+
+
+## APIs adicionales
+
+### Agregar registro completo
+
+`POST /api/add_user`
+
+```json
+{
+  "telegramId": "123456789",
+  "username": "usuario",
+  "credits": 50,
+  "days": 30
+}
+```
+
+### Agregar créditos
+
+`POST /api/add_credits`
+
+```json
+{
+  "telegramId": "123456789",
+  "amount": 50
+}
+```
+
+### Agregar días
+
+`POST /api/add_days`
+
+```json
+{
+  "telegramId": "123456789",
+  "amount": 30
+}
+```
+
+## Probador de API
+
+El menú **APIs → Probar APIs** permite ejecutar solicitudes de prueba contra los endpoints del mismo despliegue de Vercel y ver la respuesta JSON.
