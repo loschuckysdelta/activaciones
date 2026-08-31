@@ -1,59 +1,21 @@
 import { getDb } from "../lib/mongodb.js";
 import { requireAdmin } from "../lib/auth.js";
+import { addSubscriptionDays } from "../lib/subscription.js";
 
 export default async function handler(req, res) {
   if (!requireAdmin(req, res)) return;
-
-  if (req.method !== "POST") {
-    return res.status(405).json({ success: false, message: "Método no permitido" });
-  }
-
+  if (req.method !== "POST") return res.status(405).json({ success:false, message:"Método no permitido" });
   try {
     const telegramId = String(req.body?.telegramId || "").trim();
     const amount = Number(req.body?.amount);
-
-    if (!telegramId) {
-      return res.status(400).json({ success: false, message: "telegramId es obligatorio" });
-    }
-
-    if (!Number.isFinite(amount) || !Number.isInteger(amount) || amount <= 0) {
-      return res.status(400).json({ success: false, message: "amount debe ser un entero mayor que 0" });
-    }
-
+    if (!telegramId) return res.status(400).json({ success:false, message:"telegramId es obligatorio" });
+    if (!Number.isInteger(amount) || amount <= 0) return res.status(400).json({ success:false, message:"amount debe ser un entero mayor que 0" });
     const db = await getDb();
     const users = db.collection("users");
-    const now = new Date();
-
-    // No incluimos days en $setOnInsert porque también se modifica con $inc.
-    await users.updateOne(
-      { telegramId },
-      {
-        $setOnInsert: {
-          telegramId,
-          username: "",
-          credits: 0,
-          createdAt: now
-        },
-        $inc: { days: amount },
-        $set: { updatedAt: now }
-      },
-      { upsert: true }
-    );
-
-    const user = await users.findOne({ telegramId });
-
-    return res.status(200).json({
-      success: true,
-      message: `Se agregaron ${amount} días`,
-      user: {
-        telegramId: user.telegramId,
-        username: user.username || "",
-        credits: Number(user.credits) || 0,
-        days: Number(user.days) || 0
-      }
-    });
+    const user = await addSubscriptionDays(users, telegramId, amount, new Date());
+    return res.status(200).json({ success:true, message:`Se agregaron ${amount} días`, user:{ telegramId:user.telegramId, username:user.username||"", credits:Number(user.credits)||0, days:Number(user.days)||0, daysExpiresAt:user.daysExpiresAt||null } });
   } catch (error) {
     console.error("[add_days]", error);
-    return res.status(500).json({ success: false, message: "Error interno del servidor" });
+    return res.status(500).json({ success:false, message:"Error interno del servidor" });
   }
 }

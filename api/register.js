@@ -30,6 +30,7 @@ export default async function handler(req, res) {
           telegramId,
           credits: 0,
           days: 0,
+          daysExpiresAt: null,
           createdAt: now
         },
         $set: {
