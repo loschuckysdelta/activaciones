@@ -1,450 +1,526 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Panel del Bot</title>
-
-<style>
-:root{
-  --bg:#050505;
-  --bg2:#0a0a0b;
-  --panel:#0e0e10;
-  --panel2:#141416;
-  --panel3:#19191c;
-  --line:#29292e;
-  --line-red:rgba(239,35,60,.35);
-  --text:#f8f8fa;
-  --muted:#9b9ba5;
-  --red:#ef233c;
-  --red2:#b80f27;
-  --red3:#ff4058;
-  --green:#22c55e;
-  --orange:#f59e0b;
-  --violet:#8b5cf6;
-  --shadow:0 18px 50px rgba(0,0,0,.34);
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{
-  margin:0;
-  color:var(--text);
-  font-family:Inter,Segoe UI,Arial,sans-serif;
-  background:
-    radial-gradient(circle at 78% -10%,rgba(239,35,60,.14),transparent 31%),
-    radial-gradient(circle at 18% 90%,rgba(184,15,39,.08),transparent 27%),
-    linear-gradient(145deg,#030303,#09090b 52%,#050506);
-  min-height:100vh;
-}
-button,input,select,textarea{font:inherit}
-button{cursor:pointer}
-::selection{background:var(--red);color:#fff}
-
-.app{display:grid;grid-template-columns:270px minmax(0,1fr);min-height:100vh}
-.sidebar{
-  position:sticky;top:0;height:100vh;
-  border-right:1px solid #242428;
-  background:linear-gradient(180deg,rgba(10,10,11,.98),rgba(5,5,6,.98));
-  padding:25px 17px;
-  display:flex;flex-direction:column;gap:27px;
-  box-shadow:18px 0 50px rgba(0,0,0,.22);
-}
-.brand{
-  display:flex;align-items:center;gap:13px;padding:2px 8px 17px;
-  border-bottom:1px solid #202024;
-}
-.logo{
-  width:52px;height:52px;border-radius:16px;display:grid;place-items:center;
-  overflow:hidden;background:#080808;border:1px solid rgba(239,35,60,.55);
-  box-shadow:0 0 0 4px rgba(239,35,60,.07),0 10px 28px rgba(239,35,60,.16);
-}
-.logo img{width:100%;height:100%;object-fit:cover;display:block}
-.brand b{font-size:20px;letter-spacing:-.3px}
-.brand small{display:block;color:#b1b1ba;margin-top:4px;font-size:13px}
-.nav-title{
-  font-size:10px;color:#6f6f79;text-transform:uppercase;
-  letter-spacing:.18em;margin:2px 12px 9px;font-weight:800;
-}
-.nav{display:grid;gap:8px}
-.nav button{
-  position:relative;width:100%;border:1px solid transparent;background:transparent;
-  color:#b9b9c2;text-align:left;padding:13px 14px;border-radius:12px;
-  transition:.2s ease;font-weight:600;
-}
-.nav button:hover{
-  color:#fff;background:#151517;border-color:#2a2a2e;transform:translateX(2px);
-}
-.nav button.active{
-  color:#fff;
-  background:linear-gradient(90deg,rgba(239,35,60,.22),rgba(239,35,60,.055));
-  border-color:rgba(239,35,60,.28);
-  box-shadow:inset 3px 0 0 var(--red);
-}
-.status{
-  margin-top:auto;border:1px solid #28282d;border-radius:15px;padding:14px;
-  background:linear-gradient(145deg,#111113,#0a0a0b);box-shadow:var(--shadow);
-}
-.status-dot{
-  display:inline-block;width:9px;height:9px;border-radius:50%;
-  background:#22c55e;margin-right:7px;box-shadow:0 0 12px rgba(34,197,94,.65)
-}
-
-.main{padding:30px 34px 42px;min-width:0;max-width:1800px;width:100%;margin:auto}
-.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px}
-.topbar h1{margin:0;font-size:34px;letter-spacing:-1px}
-.sub{color:var(--muted);font-size:14px;margin-top:5px}
-.pill{
-  border:1px solid rgba(239,35,60,.28);
-  background:rgba(239,35,60,.07);
-  border-radius:999px;padding:10px 15px;color:#f0c6cc;
-  box-shadow:inset 0 0 20px rgba(239,35,60,.025);
-}
-.pill::before{content:"●";color:var(--red);margin-right:8px}
-
-.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:18px}
-.stat{
-  position:relative;overflow:hidden;
-  background:linear-gradient(145deg,#121214,#0c0c0e);
-  border:1px solid #29292e;border-radius:18px;padding:20px;
-  box-shadow:0 12px 35px rgba(0,0,0,.22);transition:.2s ease;
-}
-.stat::after{
-  content:"";position:absolute;width:100px;height:100px;border-radius:50%;
-  right:-45px;top:-55px;background:rgba(239,35,60,.09);filter:blur(3px);
-}
-.stat:hover{transform:translateY(-2px);border-color:rgba(239,35,60,.38)}
-.stat .label{color:#a7a7b0;font-size:13px;font-weight:600}
-.stat .value{font-size:31px;font-weight:850;margin-top:9px;letter-spacing:-.8px}
-.stat.blue,.stat.green,.stat.orange,.stat.violet{box-shadow:inset 0 2px 0 rgba(239,35,60,.55),0 12px 35px rgba(0,0,0,.22)}
-.stat.blue .value,.stat.green .value,.stat.orange .value,.stat.violet .value{color:#fff}
-
-.grid2{display:grid;grid-template-columns:1.08fr .92fr;gap:18px}
-.card{
-  background:linear-gradient(145deg,rgba(18,18,20,.98),rgba(10,10,12,.98));
-  border:1px solid #29292e;border-radius:19px;padding:20px;margin-bottom:18px;
-  box-shadow:var(--shadow);
-}
-.card:hover{border-color:#34343a}
-.card h2{margin:0 0 16px;font-size:19px;letter-spacing:-.2px}
-
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.form-grid.three{grid-template-columns:1fr 1fr 1fr}
-input,select,textarea{
-  width:100%;min-width:0;padding:13px 14px;border-radius:11px;
-  border:1px solid #303036;background:#080809;color:#fff;outline:none;
-  transition:.2s ease;
-}
-input::placeholder,textarea::placeholder{color:#686871}
-input:hover,select:hover,textarea:hover{border-color:#44444b}
-input:focus,select:focus,textarea:focus{
-  border-color:var(--red);
-  box-shadow:0 0 0 3px rgba(239,35,60,.12),0 0 24px rgba(239,35,60,.07);
-}
-select option{background:#0b0b0c}
-
-.btn{
-  border:1px solid #34343a;border-radius:11px;padding:12px 15px;
-  font-weight:750;color:#fff;background:#202024;transition:.18s ease;
-  box-shadow:0 6px 18px rgba(0,0,0,.18);
-}
-.btn:hover{transform:translateY(-1px);filter:brightness(1.08)}
-.btn:active{transform:translateY(0) scale(.99)}
-.btn.blue,.btn.green,.btn.orange,.btn.red,.btn.violet{
-  background:linear-gradient(135deg,var(--red),var(--red2));
-  border-color:#f23b50;box-shadow:0 9px 24px rgba(239,35,60,.18);
-}
-.btn.red{background:linear-gradient(135deg,#d10e28,#8e091b)}
-
-.user-info{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
-.info{
-  background:#080809;border:1px solid #26262b;border-radius:13px;padding:14px;text-align:center;
-}
-.info span{color:#8f8f99;font-size:12px}
-.info b{display:block;font-size:21px;margin-top:5px;word-break:break-word}
-.info:hover{border-color:rgba(239,35,60,.32)}
-
-.quick-tabs{display:flex;gap:8px;margin-bottom:13px;flex-wrap:wrap}
-.quick-tabs button{
-  border:1px solid #303036;background:#0a0a0b;color:#aaaab4;
-  border-radius:10px;padding:9px 13px;transition:.18s ease;
-}
-.quick-tabs button:hover{color:#fff;border-color:#555}
-.quick-tabs button.active{
-  background:rgba(239,35,60,.14);color:#fff;border-color:rgba(239,35,60,.55);
-  box-shadow:inset 0 0 18px rgba(239,35,60,.05);
-}
-
-.shortcut-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:11px}
-.shortcut-row button{
-  border:1px solid #303036;background:#09090a;color:#e1e1e5;
-  border-radius:10px;padding:10px;transition:.18s ease;
-}
-.shortcut-row button:hover{
-  border-color:var(--red);color:#fff;background:rgba(239,35,60,.1);
-  transform:translateY(-1px)
-}
-
-.table-wrap{overflow:auto;border:1px solid #29292e;border-radius:14px;background:#09090a}
-table{width:100%;border-collapse:collapse;min-width:720px}
-th,td{padding:13px 15px;text-align:left;border-bottom:1px solid #222226}
-th{
-  color:#9696a0;font-size:11px;text-transform:uppercase;letter-spacing:.07em;
-  background:#0c0c0e;
-}
-tbody tr{transition:.15s ease}
-tbody tr:hover{background:rgba(239,35,60,.055)}
-tbody tr:last-child td{border-bottom:0}
-
-.badge{display:inline-block;padding:5px 9px;border-radius:999px;font-weight:750;font-size:12px}
-.badge.green{background:rgba(34,197,94,.12);color:#6ee7a0;border:1px solid rgba(34,197,94,.2)}
-.badge.orange{background:rgba(239,35,60,.11);color:#ff8795;border:1px solid rgba(239,35,60,.2)}
-
-.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px;flex-wrap:wrap}
-.api-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
-.api-item{
-  border:1px solid #29292e;background:#09090a;border-radius:13px;padding:14px;
-  transition:.18s ease;
-}
-.api-item:hover{border-color:rgba(239,35,60,.42);background:#0d0d0f}
-.api-item code{color:#e4e4e8}.method{font-weight:850;margin-right:8px}
-.get{color:#ff5368}.post{color:#ff8795}
-
-.msg{
-  display:none;position:fixed;right:24px;bottom:24px;z-index:50;
-  border-radius:13px;padding:13px 16px;box-shadow:0 16px 45px rgba(0,0,0,.45);
-}
-.msg.ok{display:block;background:#102718;border:1px solid #205d34}
-.msg.err{display:block;background:#320c12;border:1px solid #7b1727}
-.view{display:none;animation:fade .22s ease}.view.active{display:block}
-@keyframes fade{from{opacity:.45;transform:translateY(4px)}to{opacity:1;transform:none}}
-
-.api-tester{display:grid;grid-template-columns:280px minmax(0,1fr);gap:15px;margin-top:15px}
-.endpoint-list{display:grid;gap:8px}
-.endpoint-btn{
-  border:1px solid #29292e;background:#09090a;color:#cfcfd5;
-  border-radius:11px;padding:12px;text-align:left;transition:.18s ease;
-}
-.endpoint-btn:hover{border-color:#494950}
-.endpoint-btn.active{
-  border-color:rgba(239,35,60,.65);
-  background:linear-gradient(90deg,rgba(239,35,60,.16),rgba(239,35,60,.04));
-  box-shadow:inset 3px 0 0 var(--red);
-}
-.tester-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-textarea{
-  min-height:180px;resize:vertical;
-  font:13px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace
-}
-.response-box{
-  white-space:pre-wrap;word-break:break-word;background:#060607;
-  border:1px solid #29292e;border-radius:11px;padding:13px;min-height:180px;
-  color:#dedee4;font:13px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace
-}
-.endpoint-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:11px}
-
-::-webkit-scrollbar{width:10px;height:10px}
-::-webkit-scrollbar-track{background:#080809}
-::-webkit-scrollbar-thumb{background:#303035;border-radius:999px;border:2px solid #080809}
-::-webkit-scrollbar-thumb:hover{background:#4a171e}
-
-@media(max-width:1050px){
-  .stats{grid-template-columns:repeat(2,1fr)}
-  .grid2{grid-template-columns:1fr}
-}
-@media(max-width:900px){.api-tester,.tester-grid{grid-template-columns:1fr}}
-@media(max-width:760px){
-  .app{grid-template-columns:1fr}
-  .sidebar{position:relative;height:auto;border-right:0;border-bottom:1px solid #29292e}
-  .nav{grid-template-columns:repeat(2,1fr)}
-  .status{margin-top:0}.main{padding:19px 15px 32px}
-  .topbar{align-items:flex-start}.topbar h1{font-size:28px}
-  .pill{font-size:12px}
-  .stats,.form-grid,.form-grid.three,.user-info{grid-template-columns:1fr}
-  .shortcut-row{grid-template-columns:repeat(2,1fr)}
-}
-</style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0c15">
+  <meta name="description" content="Panel de administración de usuarios, créditos, suscripciones y APIs de Telegram.">
+  <title>Panel de control | LosChuckys</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080a12;
+      --sidebar-bg: #0c0e19;
+      --surface: #121524;
+      --surface-raised: #191c2e;
+      --surface-inner: #0c1020;
+      --surface-hover: #20233a;
+      --stroke: #292c40;
+      --stroke-light: #363a55;
+      --text: #f5f5fb;
+      --muted: #a0a4bb;
+      --soft: #72778e;
+      --primary: #790699;
+      --primary-bright: #ba60ed;
+      --primary-tint: rgba(174, 80, 219, .13);
+      --primary-stroke: rgba(194, 107, 244, .28);
+      --positive: #5dd2a1;
+      --positive-tint: rgba(93, 210, 161, .11);
+      --warning: #f3bb70;
+      --warning-tint: rgba(243, 187, 112, .1);
+      --shadow: 0 14px 34px rgba(1, 3, 13, .17);
+      --header-shadow: 0 12px 40px rgba(0,0,0,.1);
+    }
+    html[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f5f4f9;
+      --sidebar-bg: #ffffff;
+      --surface: #ffffff;
+      --surface-raised: #f6f4fb;
+      --surface-inner: #f9f8fc;
+      --surface-hover: #f0eafa;
+      --stroke: #e5e1ec;
+      --stroke-light: #d5cfdf;
+      --text: #201c2e;
+      --muted: #646078;
+      --soft: #888397;
+      --primary-bright: #790699;
+      --primary-tint: rgba(121, 6, 153, .07);
+      --primary-stroke: rgba(121, 6, 153, .2);
+      --positive: #13845a;
+      --positive-tint: rgba(19, 132, 90, .08);
+      --warning: #a86616;
+      --warning-tint: rgba(168, 102, 22, .08);
+      --shadow: 0 12px 34px rgba(44, 22, 68, .035);
+      --header-shadow: 0 12px 40px rgba(55, 34, 74, .04);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', Inter, 'Segoe UI', Arial, sans-serif;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 76% -10%, rgba(121,6,153,.085), transparent 35%);
+      z-index: -1;
+      pointer-events: none;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--primary-bright); outline-offset: 3px;
+    }
+    ::selection { background: #790699; color: white; }
+    .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+    .ico { width: 19px; height: 19px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .app { display: grid; grid-template-columns: 266px minmax(0,1fr); min-height: 100vh; }
+    .sidebar {
+      position: sticky; top: 0; height: 100dvh; display: flex; flex-direction: column;
+      padding: 27px 17px 18px; border-right: 1px solid var(--stroke);
+      background: var(--sidebar-bg); z-index: 30; overflow-y: auto;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 9px 32px; text-decoration: none; color: var(--text); }
+    .brand-logo { width: 45px; height: 45px; border-radius: 14px; background: var(--primary-tint); border: 1px solid var(--primary-stroke); display: grid; place-items: center; overflow: hidden; flex: 0 0 auto; }
+    .brand-logo { position: relative; background: linear-gradient(135deg, #790699, #b94de9); color: #fff; }
+    .brand-fallback { position: absolute; inset: 0; display: grid; place-items: center; font-size: 13px; font-weight: 800; letter-spacing: -.5px; }
+    .brand-logo img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: cover; }
+    .brand-name { display: block; font-size: 15px; font-weight: 800; letter-spacing: -.45px; line-height: 1.4; }
+    .brand-name span { color: var(--primary-bright); }
+    .brand-sub { display: block; font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 3px; }
+    .nav-heading { text-transform: uppercase; letter-spacing: .15em; color: var(--soft); font-size: 10px; font-weight: 800; padding: 0 14px; margin-bottom: 13px; }
+    .nav { display: flex; flex-direction: column; gap: 5px; }
+    .nav-btn {
+      width: 100%; border: 1px solid transparent; background: transparent; color: var(--muted);
+      text-align: left; display: flex; align-items: center; gap: 13px; border-radius: 13px;
+      padding: 13px 14px; min-height: 48px; font-weight: 700;
+      transition: background .18s ease, color .18s ease, border-color .18s ease;
+    }
+    .nav-btn:hover { color: var(--text); background: var(--surface-hover); }
+    .nav-btn.active { color: var(--primary-bright); background: var(--primary-tint); border-color: var(--primary-stroke); }
+    .nav-btn.active .ico { stroke-width: 2.1; }
+    .nav-btn .nav-arrow { margin-left: auto; opacity: 0; width: 15px; height: 15px; }
+    .nav-btn.active .nav-arrow { opacity: .9; }
+    .sidebar-bottom { margin-top: auto; padding-top: 25px; }
+    .connection-card { display: flex; gap: 11px; padding: 14px; background: var(--surface); border: 1px solid var(--stroke); border-radius: 15px; }
+    .connection-dot { flex: 0 0 auto; margin-top: 5px; width: 9px; height: 9px; border-radius: 50%; background: var(--soft); box-shadow: 0 0 0 4px var(--surface-raised); }
+    .connection-card[data-state="online"] .connection-dot { background: #4bce93; box-shadow: 0 0 0 4px rgba(75,206,147,.12); }
+    .connection-card[data-state="offline"] .connection-dot { background: #f38e8e; box-shadow: 0 0 0 4px rgba(243,142,142,.1); }
+    .connection-title { font-weight: 750; font-size: 12px; line-height: 1.5; }
+    .connection-desc { color: var(--muted); font-size: 11px; margin-top: 3px; line-height: 1.5; }
+    .sidebar-footnote { padding: 17px 12px 0; color: var(--soft); font-size: 11px; }
+    .sidebar-backdrop { display: none; }
+    .main { width: 100%; min-width: 0; max-width: 1720px; margin: 0 auto; padding: 32px clamp(20px, 3.2vw, 56px) 28px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 24px; border-bottom: 1px solid var(--stroke); margin-bottom: 29px; }
+    .topbar-title { min-width: 0; }
+    .eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: 10px; font-weight: 800; color: var(--primary-bright); margin-bottom: 8px; }
+    .topbar h1 { margin: 0; font-size: clamp(24px, 2.3vw, 31px); line-height: 1.25; letter-spacing: -.95px; font-weight: 800; }
+    .sub { color: var(--muted); font-size: 12px; line-height: 1.7; }
+    .topbar .sub { margin-top: 6px; font-size: 12px; }
+    .top-actions { display: flex; gap: 11px; align-items: center; flex-shrink: 0; }
+    .top-date { color: var(--muted); font-size: 11px; font-weight: 650; white-space: nowrap; }
+    .icon-button { width: 41px; height: 41px; display: grid; place-items: center; padding: 0; border: 1px solid var(--stroke); border-radius: 12px; background: var(--surface); color: var(--text); transition: border-color .18s, background .18s; }
+    .icon-button:hover { background: var(--surface-raised); border-color: var(--primary-stroke); }
+    .menu-toggle { display: none; }
+    .banner {
+      border: 1px solid var(--primary-stroke); border-radius: 20px;
+      background: linear-gradient(110deg, rgba(121, 6, 153, .19), rgba(121, 6, 153, .05) 52%, var(--surface) 100%);
+      display: flex; justify-content: space-between; gap: 20px; align-items: center;
+      padding: clamp(20px, 2.5vw, 29px); margin-bottom: 23px; position: relative; overflow: hidden;
+    }
+    .banner::after { content: ""; position: absolute; right: -60px; top: -75px; height: 230px; width: 230px; border: 1px solid rgba(188,96,237,.14); border-radius: 50%; box-shadow: 0 0 0 35px rgba(188,96,237,.035), 0 0 0 80px rgba(188,96,237,.02); pointer-events: none; }
+    .banner-copy { position: relative; z-index: 1; }
+    .banner-kicker { text-transform: uppercase; font-size: 10px; letter-spacing: .15em; font-weight: 800; color: var(--primary-bright); margin-bottom: 9px; }
+    .banner h2 { margin: 0 0 8px; font-size: clamp(18px, 2.1vw, 24px); font-weight: 800; letter-spacing: -.6px; }
+    .banner p { color: var(--muted); font-size: 12px; max-width: 570px; line-height: 1.7; margin: 0; }
+    .banner-tag { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 9px; background: var(--surface); color: var(--text); border: 1px solid var(--stroke); border-radius: 999px; padding: 11px 14px; font-weight: 750; font-size: 11px; position: relative; z-index: 1; }
+    .banner-tag .ico { width: 16px; height: 16px; color: var(--primary-bright); }
+    .stats { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 15px; margin-bottom: 23px; }
+    .stat { background: var(--surface); border: 1px solid var(--stroke); border-radius: 18px; padding: clamp(17px, 1.8vw, 23px); box-shadow: var(--shadow); min-width: 0; }
+    .stat-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 19px; }
+    .stat-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--primary-tint); color: var(--primary-bright); }
+    .stat-icon .ico { width: 21px; height: 21px; }
+    .stat:nth-child(2) .stat-icon { background: var(--positive-tint); color: var(--positive); }
+    .stat:nth-child(3) .stat-icon { background: var(--warning-tint); color: var(--warning); }
+    .stat:nth-child(4) .stat-icon { background: rgba(90,159,236,.11); color: #86b6fa; }
+    .stat-corner { color: var(--soft); font-size: 11px; font-weight: 700; }
+    .stat .label { color: var(--muted); font-size: 12px; font-weight: 650; }
+    .stat .value { font-weight: 800; font-size: clamp(25px, 2.6vw, 33px); letter-spacing: -1px; margin-top: 7px; line-height: 1.25; overflow-wrap: anywhere; }
+    .grid2 { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr); gap: 18px; align-items: stretch; }
+    .card { min-width: 0; border: 1px solid var(--stroke); border-radius: 19px; background: var(--surface); box-shadow: var(--shadow); padding: clamp(17px, 2vw, 23px); margin-bottom: 19px; }
+    .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 21px; }
+    .card-heading { display: flex; gap: 11px; align-items: flex-start; min-width: 0; }
+    .card-heading-icon { background: var(--primary-tint); color: var(--primary-bright); border-radius: 12px; width: 37px; height: 37px; display: grid; place-items: center; flex: 0 0 auto; }
+    .card h2 { margin: 1px 0 4px; font-size: 16px; line-height: 1.45; letter-spacing: -.4px; font-weight: 800; }
+    .card .sub { font-size: 11px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .field { display: flex; flex-direction: column; min-width: 0; gap: 7px; }
+    .field-label { font-weight: 700; font-size: 11px; color: var(--muted); }
+    input, select, textarea {
+      display: block; width: 100%; min-width: 0; border: 1px solid var(--stroke); background: var(--surface-inner);
+      border-radius: 11px; color: var(--text); padding: 12px 13px; outline: none;
+      transition: border-color .18s ease, box-shadow .18s ease; font-size: 13px;
+    }
+    input, select { min-height: 44px; }
+    input::placeholder, textarea::placeholder { color: var(--soft); }
+    input:hover, select:hover, textarea:hover { border-color: var(--stroke-light); }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary-bright); box-shadow: 0 0 0 3px var(--primary-tint); outline: none; }
+    select option { background: var(--surface); color: var(--text); }
+    .form-actions { margin-top: 13px; }
+    .btn { display: inline-flex; justify-content: center; align-items: center; gap: 8px; min-height: 43px; border: 1px solid var(--stroke-light); border-radius: 11px; padding: 11px 15px; color: var(--text); background: var(--surface-raised); font-size: 12px; font-weight: 800; line-height: 1.2; transition: transform .16s ease, filter .16s ease, background .16s ease; }
+    .btn:hover { transform: translateY(-1px); filter: brightness(1.06); }
+    .btn:active { transform: translateY(0); }
+    .btn .ico { width: 16px; height: 16px; }
+    .btn.blue, .btn.green, .btn.orange, .btn.violet { border-color: #790699; color: #fff; background: linear-gradient(135deg,#790699,#a53dc1); }
+    .btn.red { border-color: #ad425b; background: linear-gradient(135deg,#c34f69,#ab3652); color: white; }
+    .btn.secondary { background: var(--surface-raised); color: var(--text); border-color: var(--stroke-light); }
+    .btn.wide { width: 100%; }
+    .user-info { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 9px; margin-top: 18px; }
+    .info { padding: 12px 10px; background: var(--surface-inner); border: 1px solid var(--stroke); border-radius: 11px; min-width: 0; }
+    .info span { display: block; font-size: 10px; font-weight: 700; color: var(--soft); margin-bottom: 8px; }
+    .info b { font-size: clamp(12px,1.35vw,17px); font-weight: 800; display: block; word-break: break-word; }
+    .quick-tabs { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); background: var(--surface-inner); border: 1px solid var(--stroke); border-radius: 12px; padding: 4px; gap: 4px; margin-bottom: 19px; }
+    .quick-tab { padding: 11px 5px; border-radius: 9px; border: 1px solid transparent; color: var(--muted); background: transparent; font-size: 11px; font-weight: 750; transition: background .18s; }
+    .quick-tab:hover { color: var(--text); }
+    .quick-tab.active { background: var(--primary-tint); border-color: var(--primary-stroke); color: var(--primary-bright); }
+    .shortcut-label { display: block; font-size: 11px; margin: 17px 0 10px; color: var(--muted); font-weight: 700; }
+    .shortcut-row { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; }
+    .shortcut-row button { min-height: 39px; padding: 8px 4px; border: 1px solid var(--stroke); color: var(--muted); background: var(--surface-inner); font-weight: 750; border-radius: 10px; font-size: 11px; transition: .18s ease; }
+    .shortcut-row button:hover { border-color: var(--primary-bright); color: var(--primary-bright); background: var(--primary-tint); }
+    .section-heading { margin-bottom: 19px; }
+    .section-heading h2 { margin-bottom: 5px; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 19px; }
+    .toolbar .card-heading { align-items: center; }
+    .toolbar h2 { margin-bottom: 0; }
+    .table-wrap { border: 1px solid var(--stroke); border-radius: 13px; overflow: auto; background: var(--surface-inner); }
+    table { width: 100%; border-collapse: collapse; min-width: 570px; }
+    th, td { padding: 15px 17px; text-align: left; border-bottom: 1px solid var(--stroke); vertical-align: middle; }
+    th { color: var(--soft); font-weight: 800; font-size: 10px; letter-spacing: .11em; text-transform: uppercase; background: var(--surface-raised); }
+    td { color: var(--text); font-weight: 600; font-size: 12px; overflow-wrap: anywhere; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: var(--surface-hover); }
+    .click-user { cursor: pointer; }
+    .badge { display: inline-flex; align-items: center; padding: 6px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; border: 1px solid transparent; }
+    .badge.green { color: var(--positive); background: var(--positive-tint); border-color: rgba(93,210,161,.2); }
+    .badge.orange { color: var(--warning); background: var(--warning-tint); border-color: rgba(243,187,112,.2); }
+    .badge.method-get { background: var(--positive-tint); color: var(--positive); border-color: rgba(93,210,161,.19); }
+    .badge.method-post { background: var(--primary-tint); color: var(--primary-bright); border-color: var(--primary-stroke); }
+    .empty-row { text-align: center; color: var(--muted); padding: 32px 16px; }
+    .view { display: none; animation: view-in .22s ease both; }
+    .view.active { display: block; }
+    @keyframes view-in { from { opacity: .4; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+    .api-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 11px; }
+    .api-item { border: 1px solid var(--stroke); background: var(--surface-inner); border-radius: 12px; padding: 15px; min-width: 0; transition: border-color .16s; }
+    .api-item:hover { border-color: var(--primary-stroke); }
+    .api-route { display: flex; align-items: center; gap: 9px; min-width: 0; }
+    .api-route code { font: 600 12px/1.6 ui-monospace,Consolas,monospace; overflow-wrap: anywhere; color: var(--text); }
+    .api-item .sub { margin-top: 9px; }
+    .api-tester { display: grid; grid-template-columns: 235px minmax(0,1fr); gap: 18px; align-items: start; }
+    .endpoint-list { display: grid; gap: 7px; }
+    .endpoint-btn { color: var(--muted); background: var(--surface-inner); text-align: left; padding: 12px; border-radius: 10px; border: 1px solid var(--stroke); font: 700 11px/1.6 ui-monospace,Consolas,monospace; transition: .18s ease; }
+    .endpoint-btn:hover { border-color: var(--stroke-light); color: var(--text); }
+    .endpoint-btn.active { border-color: var(--primary-stroke); background: var(--primary-tint); color: var(--primary-bright); }
+    .tester-content { min-width: 0; }
+    .endpoint-meta { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-bottom: 13px; }
+    .endpoint-meta code { color: var(--text); font: 700 12px/1.5 ui-monospace,Consolas,monospace; overflow-wrap: anywhere; }
+    .tester-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; }
+    .tester-grid .field-label { margin-bottom: 7px; display: block; }
+    textarea { min-height: 210px; resize: vertical; font: 12px/1.6 ui-monospace,Consolas,monospace; }
+    .response-box { min-height: 210px; padding: 13px; border: 1px solid var(--stroke); border-radius: 11px; background: var(--surface-inner); color: var(--text); overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.6 ui-monospace,Consolas,monospace; }
+    .msg { display: none; position: fixed; right: 24px; bottom: max(24px, env(safe-area-inset-bottom)); max-width: min(420px,calc(100vw - 32px)); border: 1px solid var(--stroke); background: var(--surface-raised); color: var(--text); box-shadow: 0 20px 50px rgba(0,0,0,.25); border-radius: 13px; padding: 15px 17px; z-index: 90; font-weight: 700; font-size: 12px; line-height: 1.6; }
+    .msg.ok { display: block; border-left: 4px solid var(--positive); }
+    .msg.err { display: block; border-left: 4px solid #e77d91; }
+    .hint { display: flex; gap: 10px; color: var(--muted); background: var(--surface-inner); border: 1px solid var(--stroke); border-radius: 11px; padding: 14px; font-size: 11px; line-height: 1.7; }
+    .hint .ico { color: var(--primary-bright); width: 18px; height: 18px; margin-top: 2px; }
+    .footer { margin-top: 20px; padding-top: 19px; border-top: 1px solid var(--stroke); display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--soft); font-size: 11px; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--stroke-light); border-radius: 20px; }
+    @media (min-width: 1540px) { .main { padding-left: 58px; padding-right: 58px; } }
+    @media (max-width: 1280px) {
+      .stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .grid2 { grid-template-columns: 1fr; }
+      .user-info { grid-template-columns: repeat(4,minmax(0,1fr)); }
+      .api-tester { grid-template-columns: 210px minmax(0,1fr); }
+    }
+    @media (max-width: 960px) {
+      .app { grid-template-columns: minmax(0,1fr); }
+      .sidebar { position: fixed; left: 0; top: 0; bottom: 0; height: 100dvh; width: min(295px, 84vw); transform: translateX(-103%); transition: transform .22s ease; box-shadow: 20px 0 60px rgba(0,0,0,.15); }
+      body.menu-open .sidebar { transform: translateX(0); }
+      .sidebar-backdrop { position: fixed; inset: 0; background: rgba(3,5,15,.65); z-index: 25; }
+      body.menu-open .sidebar-backdrop { display: block; }
+      body.menu-open { overflow: hidden; }
+      .main { padding: 22px clamp(16px, 4vw, 32px) 30px; }
+      .menu-toggle { display: grid; }
+      .topbar-title { margin-right: auto; }
+      .topbar { gap: 11px; }
+      .api-tester { grid-template-columns: 235px minmax(0,1fr); }
+    }
+    @media (max-width: 720px) {
+      .stats { gap: 10px; }
+      .stat { padding: 16px; }
+      .grid2 { gap: 0; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-actions { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .user-info { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .api-grid { grid-template-columns: 1fr; }
+      .api-tester { grid-template-columns: minmax(0,1fr); }
+      .endpoint-list { display: flex; overflow-x: auto; scroll-snap-type: x proximity; padding: 0 0 7px; gap: 7px; }
+      .endpoint-btn { flex: 0 0 auto; white-space: nowrap; scroll-snap-align: start; }
+      .tester-grid { grid-template-columns: 1fr; }
+      .response-box { min-height: 170px; max-height: 400px; }
+      textarea { min-height: 155px; }
+      .banner-tag { display: none; }
+    }
+    @media (max-width: 600px) {
+      .main { padding: 17px 13px 25px; }
+      .topbar { margin-bottom: 20px; padding-bottom: 17px; }
+      .top-date { display: none; }
+      .topbar h1 { font-size: 23px; }
+      .topbar .sub { font-size: 11px; line-height: 1.4; }
+      .top-actions { gap: 6px; }
+      .icon-button { height: 40px; width: 40px; }
+      .banner { border-radius: 16px; padding: 19px; }
+      .banner h2 { font-size: 18px; }
+      .banner p { font-size: 11px; }
+      .stats { margin-bottom: 15px; }
+      .stat .value { font-size: 25px; }
+      .stat .label { font-size: 11px; line-height: 1.5; }
+      .stat-top { margin-bottom: 15px; }
+      .stat-icon { width: 35px; height: 35px; }
+      .stat-corner { display: none; }
+      .card { border-radius: 15px; padding: 16px 13px; margin-bottom: 13px; }
+      .card-head { margin-bottom: 16px; }
+      .card h2 { font-size: 15px; }
+      .card-heading-icon { height: 34px; width: 34px; }
+      .form-actions { grid-template-columns: 1fr; }
+      .user-info { gap: 8px; }
+      .info { padding: 12px; }
+      .info b { font-size: 14px; }
+      .table-wrap { background: transparent; border: none; overflow: visible; }
+      table { min-width: 0; width: 100%; display: block; }
+      thead { display: none; }
+      tbody { display: grid; gap: 9px; width: 100%; }
+      tbody tr { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; border: 1px solid var(--stroke); background: var(--surface-inner); border-radius: 12px; padding: 12px; }
+      tbody td { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 0; border-bottom: 0; font-size: 11px; }
+      tbody td::before { content: attr(data-label); color: var(--soft); font-size: 9px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+      tbody td[data-label="Acción"] { grid-column: 1 / -1; }
+      tbody td[data-label="Acción"] .btn { width: 100%; }
+      tbody td.empty-row { grid-column: 1 / -1; padding: 15px; text-align: center; display: block; }
+      tbody td.empty-row::before { display: none; }
+      .toolbar { align-items: flex-start; }
+      .msg { right: 12px; bottom: max(14px,env(safe-area-inset-bottom)); }
+      .footer { font-size: 10px; }
+    }
+    @media (max-width: 355px) {
+      .stats { grid-template-columns: 1fr; }
+      .quick-tab { font-size: 10px; }
+      .banner h2 { font-size: 17px; }
+      .topbar h1 { font-size: 21px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
 </head>
 <body>
+<svg class="sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 3.2a4 4 0 0 1 0 7.6M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 8-4 4 4 4m8-8 4 4-4 4M14 4l-4 16"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="4"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.2 15.1A9 9 0 0 1 8.9 3.8a9 9 0 1 0 11.3 11.3Z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="7"/><path d="m16 16 5 5"/></symbol>
+  <symbol id="i-userplus" viewBox="0 0 24 24"><path d="M15 20v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M16 8h7m-3.5-3.5v7"/><circle cx="8" cy="6" r="4"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="16" rx="3"/><path d="M18 13h4M4 5V3h14"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 10-12h-7l1-8Z"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14-5L3 9m0-6v6h6M4 13a8 8 0 0 0 14 5l3-3m0 6v-6h-6"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 11v6M12 7h.01"/></symbol>
+</svg>
+
+<div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
 <div class="app">
-  <aside class="sidebar">
-    <div class="brand"><div class="logo"><img src="https://i.postimg.cc/Ls9r9nFY/image.png" alt="Logo del Bot"></div><div><b>Panel del Bot</b><small>Telegram</small></div></div>
-
-    <div>
-      <div class="nav-title">Principal</div>
+  <aside class="sidebar" id="sidebar" aria-label="Menú principal">
+    <a href="#dashboard" class="brand" id="brandLink">
+      <span class="brand-logo"><span class="brand-fallback">LC</span><img src="https://i.postimg.cc/Ls9r9nFY/image.png" alt="Logo LosChuckys" onerror="this.style.display='none'"></span>
+      <span><span class="brand-name">Los<span>Chuckys</span></span><span class="brand-sub">Panel de administración</span></span>
+    </a>
+    <nav aria-label="Secciones del panel">
+      <div class="nav-heading">Menú principal</div>
       <div class="nav">
-        <button class="nav-btn active" data-view="dashboard">🏠 Dashboard</button>
-        <button class="nav-btn" data-view="usuarios">👥 Usuarios</button>
-        <button class="nav-btn" data-view="apis">⚡ APIs</button>
-        <button class="nav-btn" data-view="herramientas">🛠 Herramientas</button>
+        <button type="button" class="nav-btn active" data-view="dashboard"><svg class="ico"><use href="#i-dashboard"/></svg><span>Dashboard</span><svg class="ico nav-arrow"><use href="#i-chevron"/></svg></button>
+        <button type="button" class="nav-btn" data-view="usuarios"><svg class="ico"><use href="#i-users"/></svg><span>Usuarios</span><svg class="ico nav-arrow"><use href="#i-chevron"/></svg></button>
+        <button type="button" class="nav-btn" data-view="apis"><svg class="ico"><use href="#i-code"/></svg><span>APIs</span><svg class="ico nav-arrow"><use href="#i-chevron"/></svg></button>
+        <button type="button" class="nav-btn" data-view="herramientas"><svg class="ico"><use href="#i-settings"/></svg><span>Herramientas</span><svg class="ico nav-arrow"><use href="#i-chevron"/></svg></button>
       </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="connection-card" id="connectionCard" data-state="checking">
+        <span class="connection-dot"></span>
+        <div><div class="connection-title" id="backendStatusLabel">Verificando conexión</div><div class="connection-desc" id="backendStatusDetail">MongoDB / API</div></div>
+      </div>
+      <div class="sidebar-footnote">Panel de gestión · v2.0</div>
     </div>
-
-    <div class="status"><span class="status-dot"></span><b>MongoDB / API</b><div class="sub">Panel conectado al backend</div></div>
   </aside>
 
-  <main class="main">
-    <div class="topbar">
-      <div><h1 id="pageTitle">Dashboard</h1><div class="sub" id="pageSub">Resumen general del sistema</div></div>
-      <div class="pill">MongoDB + Vercel</div>
-    </div>
+  <main class="main" id="mainContent">
+    <header class="topbar">
+      <button type="button" class="icon-button menu-toggle" id="menuToggle" aria-label="Abrir menú" aria-controls="sidebar" aria-expanded="false"><svg class="ico"><use href="#i-menu"/></svg></button>
+      <div class="topbar-title"><div class="eyebrow">Workspace / Administración</div><h1 id="pageTitle">Dashboard</h1><div class="sub" id="pageSub">Resumen general de tu plataforma</div></div>
+      <div class="top-actions"><span class="top-date" id="currentDate"></span><button type="button" class="icon-button" id="themeToggle" aria-label="Cambiar tema" title="Cambiar tema"><svg class="ico"><use href="#i-sun" id="themeIcon"/></svg></button></div>
+    </header>
 
-    <section id="dashboard" class="view active">
+    <section id="dashboard" class="view active" aria-label="Dashboard">
+      <div class="banner"><div class="banner-copy"><div class="banner-kicker">Centro de control</div><h2>Tu plataforma, en un solo lugar.</h2><p>Gestiona usuarios, créditos, días de suscripción y las herramientas de tu API desde un panel organizado.</p></div><div class="banner-tag"><svg class="ico"><use href="#i-bolt"/></svg> Telegram · MongoDB</div></div>
       <div class="stats">
-        <div class="stat blue"><div class="label">Usuarios totales</div><div class="value" id="totalUsers">0</div></div>
-        <div class="stat green"><div class="label">Créditos totales</div><div class="value" id="totalCredits">0</div></div>
-        <div class="stat orange"><div class="label">Días totales</div><div class="value" id="totalDays">0</div></div>
-        <div class="stat violet"><div class="label">Acciones en sesión</div><div class="value" id="sessionActions">0</div></div>
+        <div class="stat"><div class="stat-top"><span class="stat-icon"><svg class="ico"><use href="#i-users"/></svg></span><span class="stat-corner">Usuarios</span></div><div class="label">Usuarios registrados</div><div class="value" id="totalUsers">—</div></div>
+        <div class="stat"><div class="stat-top"><span class="stat-icon"><svg class="ico"><use href="#i-wallet"/></svg></span><span class="stat-corner">Créditos</span></div><div class="label">Créditos totales</div><div class="value" id="totalCredits">—</div></div>
+        <div class="stat"><div class="stat-top"><span class="stat-icon"><svg class="ico"><use href="#i-clock"/></svg></span><span class="stat-corner">Suscripción</span></div><div class="label">Días totales</div><div class="value" id="totalDays">—</div></div>
+        <div class="stat"><div class="stat-top"><span class="stat-icon"><svg class="ico"><use href="#i-bolt"/></svg></span><span class="stat-corner">Actividad</span></div><div class="label">Acciones de esta sesión</div><div class="value" id="sessionActions">0</div></div>
       </div>
-
       <div class="grid2">
         <div class="card">
-          <h2>🔎 Buscar / Registrar usuario</h2>
+          <div class="card-head"><div class="card-heading"><span class="card-heading-icon"><svg class="ico"><use href="#i-search"/></svg></span><div><h2>Buscar o registrar usuario</h2><div class="sub">Consulta su información mediante Telegram ID.</div></div></div></div>
           <div class="form-grid">
-            <input id="telegramId" placeholder="ID de Telegram">
-            <input id="username" placeholder="Username (opcional)">
+            <label class="field"><span class="field-label">ID de Telegram</span><input id="telegramId" placeholder="Ej. 123456789" inputmode="numeric" autocomplete="off"></label>
+            <label class="field"><span class="field-label">Nombre de usuario (opcional)</span><input id="username" placeholder="Ej. usuario_telegram" autocomplete="off"></label>
           </div>
-          <div class="form-grid" style="margin-top:10px">
-            <button class="btn blue" id="btnBuscar">Buscar</button>
-            <button class="btn green" id="btnRegistrar">Registrar / Actualizar</button>
-          </div>
-          <div class="user-info">
-            <div class="info"><span>ID</span><b id="sId">-</b></div>
+          <div class="form-grid form-actions"><button type="button" class="btn secondary" id="btnBuscar"><svg class="ico"><use href="#i-search"/></svg> Buscar usuario</button><button type="button" class="btn blue" id="btnRegistrar"><svg class="ico"><use href="#i-userplus"/></svg> Registrar / actualizar</button></div>
+          <div class="user-info" aria-label="Información del usuario consultado">
+            <div class="info"><span>ID de Telegram</span><b id="sId">—</b></div>
             <div class="info"><span>Créditos</span><b id="sCredits">0</b></div>
             <div class="info"><span>Días</span><b id="sDays">0</b></div>
-            <div class="info"><span>Vence</span><b id="sExpires">-</b></div>
+            <div class="info"><span>Vencimiento</span><b id="sExpires">—</b></div>
           </div>
         </div>
-
         <div class="card">
-          <h2>⚡ Acciones rápidas</h2>
-          <div class="quick-tabs">
-            <button class="quick-tab active" data-mode="increment">Sumar saldo</button>
-            <button class="quick-tab" data-mode="deduct">Descontar saldo</button>
-            <button class="quick-tab" data-mode="set">Saldo exacto</button>
-          </div>
+          <div class="card-head"><div class="card-heading"><span class="card-heading-icon"><svg class="ico"><use href="#i-bolt"/></svg></span><div><h2>Acciones rápidas</h2><div class="sub">Modifica créditos o días del usuario seleccionado.</div></div></div></div>
+          <div class="quick-tabs" role="group" aria-label="Tipo de operación"><button type="button" class="quick-tab active" data-mode="increment">Sumar</button><button type="button" class="quick-tab" data-mode="deduct">Descontar</button><button type="button" class="quick-tab" data-mode="set">Fijar saldo</button></div>
           <div class="form-grid">
-            <select id="balanceType">
-              <option value="credits">Créditos</option>
-              <option value="days">Días</option>
-            </select>
-            <input id="balanceAmount" type="number" min="0" placeholder="Cantidad">
+            <label class="field"><span class="field-label">Tipo de saldo</span><select id="balanceType"><option value="credits">Créditos</option><option value="days">Días</option></select></label>
+            <label class="field"><span class="field-label">Cantidad</span><input id="balanceAmount" type="number" min="0" step="1" placeholder="Ej. 30" inputmode="numeric"></label>
           </div>
-          <button class="btn green" id="btnBalance" style="width:100%;margin-top:10px">+ Sumar</button>
-          <div class="shortcut-row">
-            <button data-amount="10">+10</button><button data-amount="50">+50</button>
-            <button data-amount="100">+100</button><button data-amount="200">+200</button>
-          </div>
+          <button type="button" class="btn green wide" id="btnBalance" style="margin-top:13px">+ Sumar saldo</button>
+          <span class="shortcut-label">Cantidades frecuentes</span>
+          <div class="shortcut-row"><button type="button" data-amount="10">+10</button><button type="button" data-amount="30">+30</button><button type="button" data-amount="50">+50</button><button type="button" data-amount="100">+100</button></div>
         </div>
       </div>
-
       <div class="card">
-        <div class="toolbar"><h2 style="margin:0">👥 Últimos usuarios</h2><button class="btn" id="btnRefresh">Actualizar</button></div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>ID Telegram</th><th>Username</th><th>Créditos</th><th>Días</th></tr></thead>
-            <tbody id="tbody"></tbody>
-          </table>
-        </div>
+        <div class="toolbar"><div class="card-heading"><span class="card-heading-icon"><svg class="ico"><use href="#i-users"/></svg></span><div><h2>Últimos usuarios</h2><div class="sub">Actividad reciente de tu plataforma</div></div></div><button type="button" class="btn secondary" id="btnRefresh"><svg class="ico"><use href="#i-refresh"/></svg> Actualizar</button></div>
+        <div class="table-wrap"><table aria-label="Últimos usuarios"><thead><tr><th>ID Telegram</th><th>Username</th><th>Créditos</th><th>Días</th></tr></thead><tbody id="tbody"><tr><td class="empty-row" colspan="4">Cargando usuarios...</td></tr></tbody></table></div>
       </div>
     </section>
 
-    <section id="usuarios" class="view">
+    <section id="usuarios" class="view" aria-label="Usuarios">
       <div class="card">
-        <h2>👥 Gestión de usuarios</h2>
-        <div class="sub" style="margin-bottom:14px">Busca un usuario, revisa sus saldos y selecciónalo para editar.</div>
-        <div class="form-grid">
-          <input id="userSearch" placeholder="Buscar por ID o username">
-          <button class="btn blue" id="btnFilterUsers">Buscar en lista</button>
-        </div>
+        <div class="card-head"><div class="card-heading"><span class="card-heading-icon"><svg class="ico"><use href="#i-users"/></svg></span><div><h2>Gestión de usuarios</h2><div class="sub">Busca por nombre o ID y selecciona un usuario para editarlo.</div></div></div></div>
+        <div class="form-grid"><label class="field"><span class="field-label">Buscar usuario</span><input id="userSearch" type="search" placeholder="ID de Telegram o username" autocomplete="off"></label><div class="field"><span class="field-label">Filtrar registros</span><button type="button" class="btn blue" id="btnFilterUsers"><svg class="ico"><use href="#i-search"/></svg> Buscar en la lista</button></div></div>
       </div>
-      <div class="card">
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>ID Telegram</th><th>Username</th><th>Créditos</th><th>Días</th><th>Acción</th></tr></thead>
-            <tbody id="usersViewBody"></tbody>
-          </table>
-        </div>
-      </div>
+      <div class="card"><div class="toolbar"><div class="card-heading"><span class="card-heading-icon"><svg class="ico"><use href="#i-dashboard"/></svg></span><div><h2>Directorio de usuarios</h2><div class="sub">Selecciona un registro para ver su saldo en Dashboard.</div></div></div></div><div class="table-wrap"><table aria-label="Directorio de usuarios"><thead><tr><th>ID Telegram</th><th>Username</th><th>Créditos</th><th>Días</th><th>Acción</th></tr></thead><tbody id="usersViewBody"><tr><td class="empty-row" colspan="5">Cargando usuarios...</td></tr></tbody></table></div></div>
     </section>
 
-    <section id="apis" class="view">
-      <div class="card">
-        <h2>⚡ Menú de APIs</h2>
+    <section id="apis" class="view" aria-label="APIs">
+      <div class="card"><div class="card-head"><div class="card-heading"><span class="card-heading-icon"><svg class="ico"><use href="#i-code"/></svg></span><div><h2>Directorio de endpoints</h2><div class="sub">Rutas disponibles para consultar y administrar usuarios, créditos y días.</div></div></div></div>
         <div class="api-grid">
-          <div class="api-item"><span class="method get">GET</span><code>/api/users</code><div class="sub">Lista usuarios</div></div>
-          <div class="api-item"><span class="method get">GET</span><code>/api/user?id=...</code><div class="sub">Consulta un usuario</div></div>
-          <div class="api-item"><span class="method post">POST</span><code>/api/register</code><div class="sub">Registra o actualiza usuario</div></div>
-          <div class="api-item"><span class="method post">POST</span><code>/api/add_user</code><div class="sub">Agrega registro con créditos y días</div></div>
-          <div class="api-item"><span class="method post">POST</span><code>/api/add_credits</code><div class="sub">Agrega créditos</div></div>
-          <div class="api-item"><span class="method post">POST</span><code>/api/deduct_credits</code><div class="sub">Descuenta créditos si hay saldo suficiente</div></div>
-          <div class="api-item"><span class="method post">POST</span><code>/api/deduct_days</code><div class="sub">Descuenta días manualmente; los días también vencen automáticamente</div></div>
-          <div class="api-item"><span class="method post">POST</span><code>/api/add_days</code><div class="sub">Agrega días</div></div>
-          <div class="api-item"><span class="method post">POST</span><code>/api/increment</code><div class="sub">Suma créditos o días</div></div>
-          <div class="api-item"><span class="method post">POST</span><code>/api/set</code><div class="sub">Establece saldo exacto</div></div>
+          <div class="api-item"><div class="api-route"><span class="badge method-get">GET</span><code>/api/users</code></div><div class="sub">Listar usuarios</div></div>
+          <div class="api-item"><div class="api-route"><span class="badge method-get">GET</span><code>/api/user?id=...</code></div><div class="sub">Consultar usuario por ID</div></div>
+          <div class="api-item"><div class="api-route"><span class="badge method-post">POST</span><code>/api/register</code></div><div class="sub">Registrar o actualizar usuario</div></div>
+          <div class="api-item"><div class="api-route"><span class="badge method-post">POST</span><code>/api/add_user</code></div><div class="sub">Crear registro con créditos y días</div></div>
+          <div class="api-item"><div class="api-route"><span class="badge method-post">POST</span><code>/api/add_credits</code></div><div class="sub">Agregar créditos</div></div>
+          <div class="api-item"><div class="api-route"><span class="badge method-post">POST</span><code>/api/deduct_credits</code></div><div class="sub">Descontar créditos</div></div>
+          <div class="api-item"><div class="api-route"><span class="badge method-post">POST</span><code>/api/deduct_days</code></div><div class="sub">Descontar días</div></div>
+          <div class="api-item"><div class="api-route"><span class="badge method-post">POST</span><code>/api/add_days</code></div><div class="sub">Agregar días</div></div>
+          <div class="api-item"><div class="api-route"><span class="badge method-post">POST</span><code>/api/increment</code></div><div class="sub">Sumar créditos o días</div></div>
+          <div class="api-item"><div class="api-route"><span class="badge method-post">POST</span><code>/api/set</code></div><div class="sub">Establecer saldo exacto</div></div>
         </div>
       </div>
-
       <div class="card">
-        <h2>🧪 Probar APIs</h2>
-        <div class="sub">Selecciona un endpoint, edita los datos y pulsa “Enviar prueba”.</div>
+        <div class="card-head"><div class="card-heading"><span class="card-heading-icon"><svg class="ico"><use href="#i-bolt"/></svg></span><div><h2>Laboratorio de APIs</h2><div class="sub">Selecciona un endpoint, modifica el JSON y ejecuta una solicitud.</div></div></div></div>
         <div class="api-tester">
-          <div class="endpoint-list" id="endpointList">
-            <button class="endpoint-btn active" data-key="users">GET · /api/users</button>
-            <button class="endpoint-btn" data-key="user">GET · /api/user?id=...</button>
-            <button class="endpoint-btn" data-key="register">POST · /api/register</button>
-            <button class="endpoint-btn" data-key="add_user">POST · /api/add_user</button>
-            <button class="endpoint-btn" data-key="add_credits">POST · /api/add_credits</button>
-            <button class="endpoint-btn" data-key="deduct_credits">POST · /api/deduct_credits</button>
-            <button class="endpoint-btn" data-key="deduct_days">POST · /api/deduct_days</button>
-            <button class="endpoint-btn" data-key="add_days">POST · /api/add_days</button>
-            <button class="endpoint-btn" data-key="increment">POST · /api/increment</button>
-            <button class="endpoint-btn" data-key="set">POST · /api/set</button>
+          <div class="endpoint-list" id="endpointList" aria-label="Seleccionar endpoint">
+            <button type="button" class="endpoint-btn active" data-key="users">GET · /api/users</button>
+            <button type="button" class="endpoint-btn" data-key="user">GET · /api/user?id=...</button>
+            <button type="button" class="endpoint-btn" data-key="register">POST · /api/register</button>
+            <button type="button" class="endpoint-btn" data-key="add_user">POST · /api/add_user</button>
+            <button type="button" class="endpoint-btn" data-key="add_credits">POST · /api/add_credits</button>
+            <button type="button" class="endpoint-btn" data-key="deduct_credits">POST · /api/deduct_credits</button>
+            <button type="button" class="endpoint-btn" data-key="deduct_days">POST · /api/deduct_days</button>
+            <button type="button" class="endpoint-btn" data-key="add_days">POST · /api/add_days</button>
+            <button type="button" class="endpoint-btn" data-key="increment">POST · /api/increment</button>
+            <button type="button" class="endpoint-btn" data-key="set">POST · /api/set</button>
           </div>
-
-          <div>
-            <div class="endpoint-meta">
-              <span id="testerMethod" class="badge green">GET</span>
-              <code id="testerPath">/api/users</code>
-            </div>
-
-            <div class="tester-grid">
-              <div>
-                <div class="sub" style="margin-bottom:7px">Request</div>
-                <textarea id="testerBody">{}</textarea>
-              </div>
-              <div>
-                <div class="sub" style="margin-bottom:7px">Response</div>
-                <div id="testerResponse" class="response-box">Pulsa “Enviar prueba” para ver la respuesta.</div>
-              </div>
-            </div>
-
-            <button class="btn violet" id="btnTestApi" style="width:100%;margin-top:10px">Enviar prueba</button>
+          <div class="tester-content">
+            <div class="endpoint-meta"><span id="testerMethod" class="badge method-get">GET</span><code id="testerPath">/api/users</code></div>
+            <div class="tester-grid"><div><label for="testerBody" class="field-label">Cuerpo de la solicitud (JSON)</label><textarea id="testerBody" spellcheck="false" autocapitalize="off">{}</textarea></div><div><div class="field-label">Respuesta del servidor</div><div id="testerResponse" class="response-box" role="status" aria-live="polite">Pulsa “Enviar prueba” para ver la respuesta.</div></div></div>
+            <button type="button" class="btn violet wide" id="btnTestApi" style="margin-top:13px"><svg class="ico"><use href="#i-bolt"/></svg> Enviar prueba</button>
           </div>
         </div>
       </div>
     </section>
 
-    <section id="herramientas" class="view">
-      <div class="card">
-        <h2>🛠 Herramientas</h2>
-        <div class="sub">Accesos rápidos para administrar el sistema.</div>
-        <div class="form-grid" style="margin-top:14px">
-          <button class="btn blue" id="toolRefresh">Actualizar usuarios</button>
-          <button class="btn violet" id="toolDashboard">Volver al Dashboard</button>
-        </div>
-      </div>
+    <section id="herramientas" class="view" aria-label="Herramientas">
+      <div class="card"><div class="card-head"><div class="card-heading"><span class="card-heading-icon"><svg class="ico"><use href="#i-settings"/></svg></span><div><h2>Herramientas de administración</h2><div class="sub">Accesos directos para trabajar más rápido con tu plataforma.</div></div></div></div><div class="form-grid"><button type="button" class="btn blue" id="toolRefresh"><svg class="ico"><use href="#i-refresh"/></svg> Actualizar usuarios</button><button type="button" class="btn secondary" id="toolDashboard"><svg class="ico"><use href="#i-dashboard"/></svg> Ir al Dashboard</button></div></div>
+      <div class="hint"><svg class="ico"><use href="#i-info"/></svg><span>Las acciones que modifiquen usuarios y sus saldos se ejecutan contra el backend configurado. Revisa los datos antes de confirmar los cambios.</span></div>
     </section>
 
-    <div id="msg" class="msg"></div>
+    <footer class="footer"><span>© LosChuckys · Panel de administración</span><span>Interfaz adaptada para móvil, tablet y escritorio</span></footer>
+    <div id="msg" class="msg" role="status" aria-live="polite"></div>
   </main>
 </div>
-
 <script>
 const $ = id => document.getElementById(id);
 let allUsers = [];
 let balanceMode = "increment";
 let sessionActions = 0;
+
+function setConnection(online) {
+  const card = $("connectionCard");
+  card.dataset.state = online ? "online" : "offline";
+  $("backendStatusLabel").textContent = online ? "API conectada" : "Sin conexión con la API";
+  $("backendStatusDetail").textContent = online ? "Respuesta correcta del servidor" : "Comprueba la configuración";
+}
+
+function setMenu(open) {
+  document.body.classList.toggle("menu-open", open);
+  $("menuToggle").setAttribute("aria-expanded", String(open));
+  $("menuToggle").setAttribute("aria-label", open ? "Cerrar menú" : "Abrir menú");
+}
+$("menuToggle").addEventListener("click", () => setMenu(!document.body.classList.contains("menu-open")));
+$("sidebarBackdrop").addEventListener("click", () => setMenu(false));
+window.addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
+window.addEventListener("resize", () => { if (window.innerWidth > 960) setMenu(false); });
+
+function applyTheme(theme) {
+  const chosen = theme === "light" ? "light" : "dark";
+  document.documentElement.dataset.theme = chosen;
+  $("themeIcon").setAttribute("href", chosen === "dark" ? "#i-sun" : "#i-moon");
+  $("themeToggle").setAttribute("aria-label", chosen === "dark" ? "Activar tema claro" : "Activar tema oscuro");
+  document.querySelector('meta[name="theme-color"]').setAttribute("content", chosen === "dark" ? "#0b0c15" : "#f5f4f9");
+  try { localStorage.setItem("loschuckys-panel-theme", chosen); } catch (_) {}
+}
+let savedTheme = "dark";
+try { savedTheme = localStorage.getItem("loschuckys-panel-theme") || "dark"; } catch (_) {}
+applyTheme(savedTheme);
+$("themeToggle").addEventListener("click", () => applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
+$("currentDate").textContent = new Intl.DateTimeFormat("es-PE", { weekday:"short", day:"numeric", month:"short", year:"numeric" }).format(new Date());
 
 async function api(url, options={}) {
   const headers = {"Content-Type":"application/json", ...(options.headers||{})};
@@ -504,6 +580,7 @@ async function applyBalance(){
 async function loadUsers(){
   try{
     const d=await api("/api/users");
+    setConnection(true);
     allUsers=Array.isArray(d.users)?d.users:[];
     renderUsers(allUsers);
     const totalCredits=allUsers.reduce((s,u)=>s+Number(u.credits||0),0);
@@ -511,48 +588,73 @@ async function loadUsers(){
     $("totalUsers").textContent=allUsers.length;
     $("totalCredits").textContent=totalCredits.toLocaleString("es-PE");
     $("totalDays").textContent=totalDays.toLocaleString("es-PE");
-  }catch(e){message(e.message,false)}
+  }catch(e){
+    setConnection(false);
+    $("totalUsers").textContent = "—";
+    $("totalCredits").textContent = "—";
+    $("totalDays").textContent = "—";
+    $("tbody").innerHTML = '<tr><td colspan="4" class="empty-row">No fue posible cargar los usuarios.</td></tr>';
+    $("usersViewBody").innerHTML = '<tr><td colspan="5" class="empty-row">Sin conexión con la API.</td></tr>';
+    message(e.message,false);
+  }
 }
-function renderUsers(users){
-  const rows=users.map((u,i)=>`<tr>
-    <td>${esc(u.telegramId)}</td>
-    <td>${esc(u.username||"-")}</td>
-    <td><span class="badge green">${u.credits??0}</span></td>
-    <td><span class="badge orange">${u.days??0}</span></td>
-    ${location.hash==="#usuarios"?`<td><button class="btn blue select-user" data-i="${i}">Seleccionar</button></td>`:""}
-  </tr>`).join("");
-  $("tbody").innerHTML=users.map(u=>`<tr class="click-user" data-id="${esc(u.telegramId)}">
-    <td>${esc(u.telegramId)}</td><td>${esc(u.username||"-")}</td>
-    <td><span class="badge green">${u.credits??0}</span></td>
-    <td><span class="badge orange">${u.days??0}</span></td></tr>`).join("");
-  $("usersViewBody").innerHTML=rows;
+function renderUsers(users) {
+  const emptyDashboard = '<tr><td colspan="4" class="empty-row">No hay usuarios para mostrar.</td></tr>';
+  const emptyDirectory = '<tr><td colspan="5" class="empty-row">No se encontraron usuarios.</td></tr>';
+  $("tbody").innerHTML = allUsers.length ? allUsers.map(u => `<tr class="click-user" data-id="${esc(u.telegramId)}" title="Seleccionar usuario">
+    <td data-label="ID Telegram">${esc(u.telegramId)}</td>
+    <td data-label="Username">${esc(u.username||"-")}</td>
+    <td data-label="Créditos"><span class="badge green">${esc(u.credits??0)}</span></td>
+    <td data-label="Días"><span class="badge orange">${esc(u.days??0)}</span></td>
+  </tr>`).join("") : emptyDashboard;
+  $("usersViewBody").innerHTML = users.length ? users.map((u,i) => `<tr>
+    <td data-label="ID Telegram">${esc(u.telegramId)}</td>
+    <td data-label="Username">${esc(u.username||"-")}</td>
+    <td data-label="Créditos"><span class="badge green">${esc(u.credits??0)}</span></td>
+    <td data-label="Días"><span class="badge orange">${esc(u.days??0)}</span></td>
+    <td data-label="Acción"><button type="button" class="btn blue select-user" data-i="${i}">Seleccionar</button></td>
+  </tr>`).join("") : emptyDirectory;
   document.querySelectorAll(".click-user").forEach(tr=>tr.addEventListener("click",()=>{
-    const u=allUsers.find(x=>String(x.telegramId)===tr.dataset.id); if(u){paintUser(u); showView("dashboard");}
+    const u=allUsers.find(x=>String(x.telegramId)===tr.dataset.id);
+    if(u) { paintUser(u); showView("dashboard"); }
   }));
   document.querySelectorAll(".select-user").forEach(btn=>btn.addEventListener("click",()=>{
-    const u=users[Number(btn.dataset.i)]; if(u){paintUser(u); showView("dashboard");}
+    const u=users[Number(btn.dataset.i)];
+    if(u) { paintUser(u); showView("dashboard"); }
   }));
 }
+
 function showView(name){
   document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
   $(name).classList.add("active");
   document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.view===name));
   const titles={
-    dashboard:["Dashboard","Resumen general del sistema"],
-    usuarios:["Usuarios","Gestión y búsqueda de usuarios"],
-    apis:["APIs","Endpoints disponibles del panel"],
-    herramientas:["Herramientas","Acciones administrativas rápidas"]
+    dashboard:["Dashboard","Resumen general de tu plataforma"],
+    usuarios:["Usuarios","Gestiona y consulta tus registros"],
+    apis:["APIs","Directorio de endpoints y laboratorio de pruebas"],
+    herramientas:["Herramientas","Accesos y acciones administrativas"]
   };
   $("pageTitle").textContent=titles[name][0]; $("pageSub").textContent=titles[name][1];
   location.hash=name;
-  if(name==="usuarios") renderUsers(allUsers);
+  if(name==="usuarios") {
+    const q=$("userSearch").value.trim().toLowerCase();
+    renderUsers(!q ? allUsers : allUsers.filter(u=>String(u.telegramId).toLowerCase().includes(q) || String(u.username||"").toLowerCase().includes(q)));
+  }
+  setMenu(false);
+  window.scrollTo(0, 0);
 }
 document.querySelectorAll(".nav-btn").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.view)));
+$("brandLink").addEventListener("click", e => { e.preventDefault(); showView("dashboard"); });
+window.addEventListener("hashchange", () => {
+  const h=location.hash.slice(1);
+  if(["dashboard","usuarios","apis","herramientas"].includes(h) && !$(h).classList.contains("active")) showView(h);
+});
+$("telegramId").addEventListener("keydown", e => { if(e.key === "Enter") buscarUsuario(); });
 document.querySelectorAll(".quick-tab").forEach(b=>b.addEventListener("click",()=>{
   balanceMode=b.dataset.mode;
   document.querySelectorAll(".quick-tab").forEach(x=>x.classList.toggle("active",x===b));
-  $("btnBalance").textContent=balanceMode==="increment"?"+ Sumar":balanceMode==="deduct"?"− Descontar":"Guardar valor";
-  $("btnBalance").className="btn "+(balanceMode==="increment"?"green":balanceMode==="deduct"?"red":"orange");
+  $("btnBalance").textContent=balanceMode==="increment"?"+ Sumar saldo":balanceMode==="deduct"?"− Descontar saldo":"Guardar valor exacto";
+  $("btnBalance").className="btn wide "+(balanceMode==="increment"?"green":balanceMode==="deduct"?"red":"orange");
 }));
 document.querySelectorAll(".shortcut-row button").forEach(b=>b.addEventListener("click",()=>{$("balanceAmount").value=b.dataset.amount}));
 $("btnBuscar").addEventListener("click",buscarUsuario);
@@ -561,11 +663,13 @@ $("btnBalance").addEventListener("click",applyBalance);
 $("btnRefresh").addEventListener("click",loadUsers);
 $("toolRefresh").addEventListener("click",async()=>{await loadUsers();message("Lista actualizada")});
 $("toolDashboard").addEventListener("click",()=>showView("dashboard"));
-$("btnFilterUsers").addEventListener("click",()=>{
+function filterUsers() {
   const q=$("userSearch").value.trim().toLowerCase();
-  const filtered=!q?allUsers:allUsers.filter(u=>String(u.telegramId).toLowerCase().includes(q)||String(u.username||"").toLowerCase().includes(q));
+  const filtered=!q ? allUsers : allUsers.filter(u=>String(u.telegramId).toLowerCase().includes(q)||String(u.username||"").toLowerCase().includes(q));
   renderUsers(filtered);
-});
+}
+$("btnFilterUsers").addEventListener("click", filterUsers);
+$("userSearch").addEventListener("input", filterUsers);
 
 const testerEndpoints = {
   users: { method:"GET", path:"/api/users", body:{} },
@@ -586,7 +690,7 @@ function selectTesterEndpoint(key){
   const cfg = testerEndpoints[key];
   document.querySelectorAll(".endpoint-btn").forEach(b=>b.classList.toggle("active",b.dataset.key===key));
   $("testerMethod").textContent = cfg.method;
-  $("testerMethod").className = "badge " + (cfg.method==="GET" ? "green" : "orange");
+  $("testerMethod").className = "badge " + (cfg.method==="GET" ? "method-get" : "method-post");
   $("testerPath").textContent = cfg.path + (key==="user" ? "?id=..." : "");
   $("testerBody").value = JSON.stringify(cfg.body, null, 2);
   $("testerResponse").textContent = "Pulsa “Enviar prueba” para ver la respuesta.";
@@ -628,6 +732,7 @@ window.addEventListener("load",async()=>{
   if(["dashboard","usuarios","apis","herramientas"].includes(h)) showView(h);
   await loadUsers();
 });
+
 </script>
 </body>
 </html>

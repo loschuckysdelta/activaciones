@@ -181,3 +181,24 @@ Ejemplo exitoso:
 ## Probador de API
 
 El menú **APIs → Probar APIs** permite ejecutar solicitudes de prueba contra los endpoints del mismo despliegue de Vercel y ver la respuesta JSON.
+
+
+## Diseño profesional adaptable (v2)
+
+La interfaz de `panel.html` fue rediseñada sin cambiar los endpoints ni las operaciones del backend:
+
+- Navegación lateral en escritorio y menú desplegable en celular/tablet.
+- Cuatro tarjetas de resumen y formularios ordenados por sección.
+- Tablas que se convierten en tarjetas en pantallas pequeñas, sin desplazamiento horizontal.
+- Panel de pruebas de API con lista horizontal de endpoints en pantallas reducidas.
+- Temas oscuro y claro; la elección se guarda solo en el navegador.
+- Indicador de conexión basado en el resultado de `/api/users`.
+- Compatible con anchos probados de 320, 390, 768 y 1440 px.
+
+### Importante: seguridad
+
+El archivo original `lib/auth.js` tiene una función `requireAdmin()` que devuelve `true`
+para cualquier petición. **No se ha modificado esa función**, ya que este trabajo es
+una actualización visual. **Antes de publicar el panel en Internet, implementa
+autenticación y autorización reales en el backend**. Ocultar la interfaz no protege
+los endpoints, y un control de acceso solo en HTML/JavaScript tampoco es suficiente.
